@@ -39,14 +39,24 @@ object
       | Ast.ExAnt (_loc, s) ->
           let n, c = destruct_aq s in
           let e = AQ.parse_expr _loc c in
-          begin match n with
-            | "expr" -> <:expr< Css.Exprs [List.flatten (List.map Css.expr $e$)] >> 
-            | "prop" -> <:expr< Css.Props $e$ >>
-            | "" -> e
-            | t ->
-              Printf.eprintf "[ERROR] \"%s\" is not a valid tag. Valid tags are [expr|prop]\n" t;
-              Loc.raise _loc Parsing.Parse_error
-          end
+          if !CssOptions.needsopen then
+            begin match n with
+              | "expr" -> <:expr< Cow.Css.Exprs [List.flatten (List.map Cow.Css.expr $e$)] >> 
+              | "prop" -> <:expr< Cow.Css.Props $e$ >>
+              | "" -> e
+              | t ->
+                Printf.eprintf "[ERROR] \"%s\" is not a valid tag. Valid tags are [expr|prop]\n" t;
+                Loc.raise _loc Parsing.Parse_error
+            end
+          else
+            begin match n with
+              | "expr" -> <:expr< Css.Exprs [List.flatten (List.map Css.expr $e$)] >> 
+              | "prop" -> <:expr< Css.Props $e$ >>
+              | "" -> e
+              | t ->
+                Printf.eprintf "[ERROR] \"%s\" is not a valid tag. Valid tags are [expr|prop]\n" t;
+                Loc.raise _loc Parsing.Parse_error
+            end
       | e -> super#expr e
 end
 
